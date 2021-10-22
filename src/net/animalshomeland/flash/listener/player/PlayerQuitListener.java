@@ -15,14 +15,14 @@ public class PlayerQuitListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        Player p = event.getPlayer();
+        Player player = event.getPlayer();
 
         if(Flash.getInstance().getGame().getGameState() == GameState.INGAME) {
-            if(!FlashPlayer.getPlayer(p).isSpectator()) {
+            if(!FlashPlayer.getPlayer(player).isSpectator()) {
                 for(Player all : Bukkit.getOnlinePlayers()) {
-                    all.sendMessage(Locale.get(all, "player-left", p.getDisplayName()));
+                    all.sendMessage(Locale.get(all, "player-left", player.getDisplayName()));
                 }
-                Flash.getInstance().getGame().getPlayers().remove(p);
+                Flash.getInstance().getGame().getPlayers().remove(player);
 
                 if(Flash.getInstance().getGame().getPlayers().size() == 1) {
                     for(Player all : Bukkit.getOnlinePlayers()) {
@@ -42,10 +42,7 @@ public class PlayerQuitListener implements Listener {
         } else {
             if(Flash.getInstance().getGame().getGameState() == GameState.LOBBY) {
                 for (Player all : Bukkit.getOnlinePlayers()) {
-                    all.sendMessage(Locale.get(all, "player-left", p.getDisplayName()));
-                }
-                if(Bukkit.getOnlinePlayers().size()-1 < Flash.getInstance().getGame().getMinPlayers()) {
-                    Flash.getInstance().getGame().getGameCountdown().getLobbyTask().cancel();
+                    all.sendMessage(Locale.get(all, "player-left", player.getDisplayName()));
                 }
             }
         }

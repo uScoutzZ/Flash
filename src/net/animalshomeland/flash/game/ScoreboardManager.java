@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import java.util.HashMap;
@@ -19,7 +20,7 @@ public class ScoreboardManager {
 
     public void setup(Player player) {
 
-        org.bukkit.scoreboard.Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective objective = scoreboard.registerNewObjective("abcd", "abcd");
 
         objective.setDisplayName("§e§lANIMALSHOMELAND.NET");
@@ -51,7 +52,7 @@ public class ScoreboardManager {
     }
 
     public void update(Player player) {
-        org.bukkit.scoreboard.Scoreboard board = player.getScoreboard();
+        Scoreboard board = player.getScoreboard();
 
         Objective objective = board.getObjective("abcd");
         Team timeTeam = board.getTeam("time");

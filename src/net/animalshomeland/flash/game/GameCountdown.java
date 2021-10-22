@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.animalshomeland.flash.Flash;
 import net.animalshomeland.flash.utilities.Locale;
+import net.animalshomeland.gameapi.user.User;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -28,27 +29,38 @@ public class GameCountdown {
         defaultEndTime = Flash.getInstance().getGameConfig().getConfigFile().getInt("end-timer");
     }
 
-    public void startLobbyCounter() {
+    public void startLobbyCounter(boolean forceStart) {
         lobbyTime = defaultLobbyTime;
+        if(forceStart) {
+            lobbyTask.cancel();
+        }
         if(lobbyTime != 0 && Flash.getInstance().getGame().getGameState() == GameState.LOBBY) {
             lobbyTask = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if(lobbyTime > 0) {
-                        if(lobbyTime == defaultLobbyTime || lobbyTime == 20 || lobbyTime == 15 || lobbyTime == 10 || lobbyTime <= 5) {
-                            String number = "plural";
-                            if(lobbyTime == 1) {
-                                number = "singular";
-                            }
-                            for(Player all : Bukkit.getOnlinePlayers()) {
-                                all.playSound(all.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0F, 1.0F);
-                                all.sendMessage(Locale.get(all, "gamestart_" + number, String.valueOf(lobbyTime)));
-                            }
-                        }
-                        lobbyTime--;
+                    if(Bukkit.getOnlinePlayers().size() != Flash.getInstance().getGame().getMinPlayers() && !forceStart) {
+                        lobbyTime = defaultLobbyTime;
+                        Bukkit.getOnlinePlayers().forEach(player -> {
+                            User.getFromPlayer(player).sendActionbar(Locale.get(player, "min-players",
+                                    Flash.getInstance().getGame().getMinPlayers()), 1);
+                        });
                     } else {
-                        cancel();
-                        Flash.getInstance().getGame().start();
+                        if(lobbyTime > 0) {
+                            if(lobbyTime == defaultLobbyTime || lobbyTime == 20 || lobbyTime == 15 || lobbyTime == 10 || lobbyTime <= 5) {
+                                String number = "plural";
+                                if(lobbyTime == 1) {
+                                    number = "singular";
+                                }
+                                for(Player all : Bukkit.getOnlinePlayers()) {
+                                    all.playSound(all.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0F, 1.0F);
+                                    all.sendMessage(Locale.get(all, "gamestart_" + number, String.valueOf(lobbyTime)));
+                                }
+                            }
+                            lobbyTime--;
+                        } else {
+                            cancel();
+                            Flash.getInstance().getGame().start();
+                        }
                     }
                 }
             }.runTaskTimer(Flash.getInstance(), 0, 20);

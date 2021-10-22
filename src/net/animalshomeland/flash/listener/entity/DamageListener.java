@@ -15,17 +15,17 @@ public class DamageListener implements Listener {
     @EventHandler
     public void onDamage(EntityDamageEvent event) {
         if(event.getEntityType() == EntityType.PLAYER) {
-            Player p = (Player) event.getEntity();
+            Player player = (Player) event.getEntity();
 
             if(Flash.getInstance().getGame().getGameState() != GameState.INGAME) {
                 event.setCancelled(true);
             } else {
                 if(event.getCause() == EntityDamageEvent.DamageCause.FALL) {
-                    if(p.getLocation().getY() <= 0) {
+                    if(player.getLocation().getY() <= 0) {
                         event.setCancelled(true);
                     }
                 } else if(event.getCause() == EntityDamageEvent.DamageCause.VOID) {
-                    p.setHealth(0.0);
+                    player.setHealth(0.0);
                 }
             }
         }

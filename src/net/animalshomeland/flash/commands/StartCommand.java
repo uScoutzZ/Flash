@@ -12,7 +12,7 @@ public class StartCommand extends Command {
     public void onPlayerExecute(Player player, String command, String[] args) {
         if(Flash.getInstance().getGame().getGameCountdown().getLobbyTask() == null ||
                 Flash.getInstance().getGame().getGameCountdown().getLobbyTask().isCancelled()) {
-            Flash.getInstance().getGame().getGameCountdown().startLobbyCounter();
+            Flash.getInstance().getGame().getGameCountdown().startLobbyCounter(true);
         }
         Flash.getInstance().getGame().getGameCountdown().setLobbyTime(3);
     }

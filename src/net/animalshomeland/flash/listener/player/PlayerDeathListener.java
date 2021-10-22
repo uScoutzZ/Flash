@@ -16,22 +16,22 @@ public class PlayerDeathListener implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
-        Player p = event.getEntity();
+        Player player = event.getEntity();
 
-        p.spigot().respawn();
+        player.spigot().respawn();
         event.setDeathMessage(null);
     }
 
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
-        Player p = event.getPlayer();
+        Player player = event.getPlayer();
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(Flash.getInstance(), new Runnable() {
             @Override
             public void run() {
-                FlashPlayer.getPlayer(p).teleportCheckpoint();
-                p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 20));
-                p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, Integer.MAX_VALUE, 5));
+                FlashPlayer.getPlayer(player).teleportCheckpoint();
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 20));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, Integer.MAX_VALUE, 5));
             }
         }, 1);
     }
