@@ -2,9 +2,7 @@ package net.animalshomeland.flash.listener.player;
 
 import net.animalshomeland.flash.Flash;
 import net.animalshomeland.flash.game.FlashPlayer;
-import net.animalshomeland.flash.game.GameCountdown;
 import net.animalshomeland.flash.game.GameState;
-import net.animalshomeland.flash.game.ScoreboardManager;
 import net.animalshomeland.flash.utilities.Locale;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -31,9 +29,6 @@ public class PlayerJoinListener implements Listener {
             player.teleport(Flash.getInstance().getLocationManager().getLocation("spawn", false));
             for(Player all : Bukkit.getOnlinePlayers()) {
                 all.sendMessage(Locale.get(all, "player-joined", player.getDisplayName()));
-            }
-            if(Flash.getInstance().getGame().getGameCountdown().getLobbyTask() == null) {
-                Flash.getInstance().getGame().getGameCountdown().startLobbyCounter(false);
             }
         } else {
             flashPlayer.setSpectator(true);

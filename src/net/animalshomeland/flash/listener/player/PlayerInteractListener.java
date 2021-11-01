@@ -46,12 +46,12 @@ public class PlayerInteractListener implements Listener {
                     } else if(event.getClickedBlock().getType() == Material.OAK_PRESSURE_PLATE) {
                         if(flashPlayer.getCheckpoint() == Flash.getInstance().getGame().getGameMap().getCheckpoints().size()) {
                             if(Flash.getInstance().getGame().getWinners().size() == 0) {
-                                if(Flash.getInstance().getGame().getGameCountdown().getDuration()[0] > 60) {
-                                    Flash.getInstance().getGame().getGameCountdown().setDuration(new long[]{60});
+                                if(Flash.getInstance().getGame().getGameCountdown().getTime() > 60) {
+                                    Flash.getInstance().getGame().getGameCountdown().setTime(60);
                                 }
                                 Flash.getInstance().getGame().getWinners().add(player.getDisplayName());
                                 for(Player all : Bukkit.getOnlinePlayers()) {
-                                    all.sendMessage(Locale.get(all, "player-finished-first", player.getName(), Flash.getInstance().getGame().getGameCountdown().getDuration()[0]));
+                                    all.sendMessage(Locale.get(all, "player-finished-first", player.getName(), Flash.getInstance().getGame().getGameCountdown().getTime()));
                                 }
                             } else {
                                 for(Player all : Bukkit.getOnlinePlayers()) {
@@ -62,7 +62,7 @@ public class PlayerInteractListener implements Listener {
                                 for(Player all : Bukkit.getOnlinePlayers()) {
                                     all.sendMessage(Locale.get(all, "all-finished"));
                                 }
-                                Flash.getInstance().getGame().getGameCountdown().setDuration(new long[]{0});
+                                Flash.getInstance().getGame().getGameCountdown().setTime(0);
                             }
                             player.setGameMode(GameMode.SPECTATOR);
                             player.getInventory().clear();

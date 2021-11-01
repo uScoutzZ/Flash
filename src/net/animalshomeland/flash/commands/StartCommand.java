@@ -1,6 +1,7 @@
 package net.animalshomeland.flash.commands;
 
 import net.animalshomeland.flash.Flash;
+import net.animalshomeland.flash.game.GameState;
 import net.animalshomeland.gameapi.command.Command;
 import net.animalshomeland.gameapi.command.RegisterCommand;
 import org.bukkit.entity.Player;
@@ -10,10 +11,9 @@ public class StartCommand extends Command {
 
     @Override
     public void onPlayerExecute(Player player, String command, String[] args) {
-        if(Flash.getInstance().getGame().getGameCountdown().getLobbyTask() == null ||
-                Flash.getInstance().getGame().getGameCountdown().getLobbyTask().isCancelled()) {
-            Flash.getInstance().getGame().getGameCountdown().startLobbyCounter(true);
+        if(Flash.getInstance().getGame().getGameState() == GameState.LOBBY) {
+            Flash.getInstance().getGame().getGameCountdown().setForced(true);
         }
-        Flash.getInstance().getGame().getGameCountdown().setLobbyTime(3);
+        Flash.getInstance().getGame().getGameCountdown().setTime(3);
     }
 }

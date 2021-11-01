@@ -31,10 +31,10 @@ public class PlayerQuitListener implements Listener {
 
                     Player last = Flash.getInstance().getGame().getPlayers().get(0);
                     if(!FlashPlayer.getPlayer(last).isSpectator()) {
-                        Flash.getInstance().getGame().getGameCountdown().setDuration(new long[]{0});
+                        Flash.getInstance().getGame().getGameCountdown().setTime(0);
                     }
                 } else if(Flash.getInstance().getGame().getPlayers().size() == 0) {
-                    Flash.getInstance().getGame().end();
+                    Flash.getInstance().getGame().getGameCountdown().setTime(0);
                 }
             } else {
                 event.setQuitMessage(null);

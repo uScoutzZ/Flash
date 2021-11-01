@@ -5,8 +5,11 @@ import lombok.Setter;
 import net.animalshomeland.flash.Flash;
 import net.animalshomeland.flash.utilities.Locale;
 import net.animalshomeland.gameapi.item.ItemBuilder;
+import net.animalshomeland.gameapi.minigame.GameCountdown;
+import net.animalshomeland.gameapi.user.User;
 import net.animalshomeland.gameapi.util.ServerUtilities;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -25,7 +28,9 @@ public class Game {
     @Getter
     private GameMap gameMap;
     @Getter @Setter
-    private long beginningTime, roundDuration, minPlayers;
+    private long beginningTime;
+    @Getter @Setter
+    private int roundDuration, minPlayers;
     @Getter @Setter
     private List<Player> players;
     @Getter @Setter
@@ -33,45 +38,89 @@ public class Game {
 
     public Game() {
         gameState = GameState.LOBBY;
-        roundDuration = 8*60;
+        roundDuration = 30;
         minPlayers = 2;
-        gameCountdown = new GameCountdown();
-        gameCountdown.setDuration(new long[]{roundDuration});
+        final int[] lobbyTime = {Flash.getInstance().getGameConfig().getConfigFile().getInt("lobby-timer")};
+
+        gameCountdown = new GameCountdown(lobbyTime[0])
+                .setLocale(Locale.class, "gamestart")
+                .setSound(Sound.BLOCK_NOTE_BLOCK_BASS)
+                .setCondition(i -> Bukkit.getOnlinePlayers().size() > 1)
+                .setActionOnRun(onlinePlayers -> {
+                    if(Bukkit.getOnlinePlayers().size() != Flash.getInstance().getGame().getMinPlayers() && !gameCountdown.isForced()) {
+                        gameCountdown.setTime(lobbyTime[0]);
+                        onlinePlayers.forEach(player -> {
+                            User.getFromPlayer(player).sendActionbar(Locale.get(player, "min-players",
+                                    Flash.getInstance().getGame().getMinPlayers()), 1);
+                        });
+                    } else {
+                        onlinePlayers.forEach(player ->
+                                player.setLevel(gameCountdown.getTime()));
+                    }
+                })
+                .setActionOnFinish(onlinePlayers -> {
+                    gameMap.init();
+                    ServerUtilities.setServerInvisible();
+                    beginningTime = System.currentTimeMillis();
+                    gameState = GameState.INGAME;
+                    startIngameCounter();
+                    Flash.getInstance().getGame().getGameMap().setSpawn(Flash.getInstance().getLocationManager().getLocation("spawn", true));
+
+                    onlinePlayers.forEach(player -> {
+                        players.add(player);
+                        player.teleport(Flash.getInstance().getGame().getGameMap().getSpawn());
+                        player.sendMessage(Locale.get(player, "gamestart_start"));
+                        player.getInventory().setItem(4, ItemBuilder.create(Material.RED_DYE)
+                                .name(Locale.get(player, "instant-death"))
+                                .build());
+                        player.getInventory().setItem(8, ItemBuilder.create(Material.LIME_DYE)
+                                .name(Locale.get(player, "players-visible"))
+                                .build());
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
+                        player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, Integer.MAX_VALUE, 5));
+                        player.setLevel(0);
+                        Flash.getInstance().getScoreboardManager().setup(player);
+                    });
+                }).start();
 
         gameMap = new GameMap();
         winners = new ArrayList<>();
         players = new ArrayList<>();
     }
 
-    public void start() {
-        gameMap.init();
-        ServerUtilities.setServerInvisible();
-        beginningTime = System.currentTimeMillis();
-        gameState = GameState.INGAME;
-        gameCountdown.startIngameCounter();
-
-        Flash.getInstance().getGame().getGameMap().setSpawn(Flash.getInstance().getLocationManager().getLocation("spawn", true));
-
-        for(Player all : Bukkit.getOnlinePlayers()) {
-            players.add(all);
-            all.teleport(Flash.getInstance().getGame().getGameMap().getSpawn());
-            all.sendMessage(Locale.get(all, "gamestart_start"));
-            all.getInventory().setItem(4, ItemBuilder.create(Material.RED_DYE)
-                    .name(Locale.get(all, "instant-death"))
-                    .build());
-            all.getInventory().setItem(8, ItemBuilder.create(Material.LIME_DYE)
-                    .name(Locale.get(all, "players-visible"))
-                    .build());
-            all.playSound(all.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
-            all.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, Integer.MAX_VALUE, 5));
-            Flash.getInstance().getScoreboardManager().setup(all);
-        }
-    }
-
-    public void end() {
-        for (Player all : Bukkit.getOnlinePlayers()) {
-            all.sendMessage(Locale.get(all, "gameend_stop"));
-        }
-        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "ahstop");
+    public void startIngameCounter() {
+        gameCountdown = new GameCountdown(roundDuration)
+                .setLocale(Locale.class, "roundend")
+                .setSound(Sound.BLOCK_NOTE_BLOCK_BASS)
+                .setActionOnRun(onlinePlayers -> {
+                    onlinePlayers.forEach(player -> {
+                        Flash.getInstance().getScoreboardManager().update(player);
+                    });
+                })
+                .setActionOnFinish(onlinePlayers -> {
+                    Flash.getInstance().getGame().setGameState(GameState.END);
+                    String message;
+                    String winner = "N/A";
+                    if(Flash.getInstance().getGame().getWinners().size() == 0) {
+                        message = "no-player-won";
+                    } else {
+                        message = "player-won";
+                        winner = Flash.getInstance().getGame().getWinners().get(0);
+                    }
+                    Location spawn = Flash.getInstance().getLocationManager().getLocation("spawn", false);
+                    String finalWinner = winner;
+                    onlinePlayers.forEach(player -> {
+                        player.teleport(spawn);
+                        player.sendMessage(Locale.get(player, message, finalWinner));
+                    });
+                    int endTime = Flash.getInstance().getGameConfig().getConfigFile().getInt("end-timer");
+                    gameCountdown = new GameCountdown(endTime)
+                            .setLocale(Locale.class, "gameend")
+                            .setSound(Sound.BLOCK_NOTE_BLOCK_BASS)
+                            .setActionOnFinish(onlinePlayers2 -> {
+                                onlinePlayers2.forEach(player -> player.sendMessage(Locale.get(player, "gameend_stop")));
+                                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "ahstop");
+                            }).start();
+                }).start();
     }
 }

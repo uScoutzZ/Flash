@@ -56,8 +56,8 @@ public class ScoreboardManager {
 
         Objective objective = board.getObjective("abcd");
         Team timeTeam = board.getTeam("time");
-        long[] duration = Flash.getInstance().getGame().getGameCountdown().getDuration();
-        timeTeam.setPrefix("§e" + String.format("%02d:%02d", duration[0] / 60, duration[0] % 60));
+        int duration = Flash.getInstance().getGame().getGameCountdown().getTime();
+        timeTeam.setPrefix("§e" + String.format("%02d:%02d", duration / 60, duration % 60));
 
         Team checkpointTeam = board.getTeam("checkpoint");
         for(Player all : Bukkit.getOnlinePlayers()) {
