@@ -1,7 +1,7 @@
 name: Flash
 author: uScoutz
 version: 1.0
-main: net.animalshomeland.flash.Flash
+main: net.apotox.flash.Flash
 api-version: 1.16
 depend:
   - GameAPI
